@@ -1,0 +1,6 @@
+open -f PCW3 ../selz80.dsk
+get -b -f DISK
+#
+#mover el archivo disk hacia ../
+#
+quit

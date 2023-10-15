@@ -1,0 +1,235 @@
+#!/usr/bin/env php
+<?php
+
+//CHEQUEO ARGUMENTOS EN LA LINEA DE COMANDOS, SI ESTAN BIEN Y HAY RETORNO COMIENZO LA CONVERSION
+$args = check_and_set_env();
+
+//ME MUEVO AL DIRECTORIO EN DONDE ESTA EL ARCHIVO ORIGEN
+chdir($args["working_dir"]);
+
+//GENERO EL ARCHIVO BINARIO CON SU CABECERA +3DOS AL PRINCIPIO
+$cont = make_p3dos_bin_header( $args["source"], $args["dest_file"], $args["codeload"] );
+
+//LA GUARDO EN EL DESTINO INDICADO EN LOS ARGUMENTOS DE LA LINEA DE COMANDOS
+file_put_contents($args["dest_file"],$cont);
+
+//RETORNO AL DIRECTORIO EN DONDE FUI CARGADO
+chdir($args["dir_actual"]);
+
+//SI NO ESTOY EN SILENCIO MUESTRO UN RESUMEN DE LO QUE HICE
+if (!$args["quiet"]) 
+{
+	echo "\nArchivo PLUS3DOS creado en ".$args["dest_file"]."\n";
+	echo "desde el binario ".$args["source"]."\n";
+	echo "con direccion de carga por defecto en ".$args["codeload"]."\n\n";
+	echo "Usar LOAD \"".$args["cpm_file"]."\" CODE\n\n";
+}
+
+exit(0);
+
+/***********************************************************************************************************************************************/
+
+function check_and_set_env() 
+{
+
+	global $argv;
+
+	$path_parts  = pathinfo(realpath($argv[0]));
+	$working_dir = $path_parts["dirname"];
+	$dir_actual  = getcwd();
+
+	if (@$argv[1]=="/?" || @$argv[1]=="--help" || @$argv[1]=="-help") 
+	{
+		ayuda();
+		chdir($dir_actual);
+		exit(1);
+	}
+
+	if (@$argv[1]=="-q" || @$argv[1]=="--q" || @$argv[1]=="-quiet" || @$argv[1]=="--quiet") 
+	{
+		$quiet = true;
+		$desp  = 1;
+	}
+	else
+	{
+		$quiet = false;
+		$desp  = 0;
+	}
+
+	if (sizeof($argv)<3) 
+	{
+		//HAGO echoing DE AYUDA y SALGO
+		echo("\nArgumentos incorrectos, ");
+		ayuda();
+		chdir($dir_actual);
+		exit(1);
+	}
+
+	$source_file = realpath($argv[1+$desp]);
+	
+	$dest_file = $argv[2+$desp];
+	
+	(isset($argv[3+$desp])) ? $load_dir=$argv[3+$desp] : $load_dir=32768;
+	
+	if (!is_numeric($load_dir)) 
+	{
+		echo("\nLa dirección de carga no es numérica\n");
+		chdir($dir_actual);
+		exit(1);
+	}
+	
+	if (!file_exists($source_file)) 
+	{
+		
+		echo("\nNo encuentro el archivo origen ".$argv[1+$desp]."\n\n");
+		chdir($dir_actual);
+		exit(1);
+		
+	}
+
+	if (!check_valid_cpm_filename($dest_file)) 
+	{
+		echo("\nEl nombre de archivo de destino \"$dest_file\" no parece ser válido para CP/M\n\n");
+		chdir($dir_actual);
+		exit(1);
+	}
+	
+	$cont = file_get_contents($source_file);
+	
+	if (strlen($cont)>65536 && !$quiet) 
+	{
+		echo("\n** ADVERTENCIA ** El archivo binario \"$source_file\" es mayor a 64KB\n");
+	}
+
+	if (strlen($cont)+$load_dir>65536 && !$quiet) 
+	{
+		echo("\n** ADVERTENCIA ** La dirección de carga por defecto es mayor a 65535\n");
+	}
+
+	return	[
+						"dir_actual"  => $dir_actual,
+						"source"      => $source_file,
+						"dest_file"   => $dir_actual . "/" . $dest_file,
+						"codeload"    => $load_dir,
+						"cpm_file"    => $dest_file,
+						"working_dir" => $working_dir,
+						"quiet"       => $quiet
+					];
+	
+}
+
+function check_valid_cpm_filename($filename) 
+{
+
+	$aux = explode(".",$filename);
+
+	if (sizeof($aux)>2)																	return false;		//retorno falso si hay varios puntos
+	if (strlen(@$aux[0])>8 || strlen(@$aux[1])>3)				return false;		//retorno falso si el nombre es mas de 8c o la extensión mas de 3c
+	if (!validar_cpm_fname($aux[0]))										return false;		//retorno falso si el nombre no es válido para CP/M
+	if (isset($aux[1]) && !validar_cpm_fname($aux[1]))	return false;		//retorno falso si la extensión (si la hay) no es válida para CP/M
+	
+	return true;
+
+}
+
+function validar_cpm_fname($s) 
+{
+
+	$s=strtoupper($s);
+	
+	/* 
+	ESTOS SON LOS CARACTERES VALIDOS PARA UN NOMBRE DE ARCHIVO CP/M:
+	ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"#$'@^_{}~
+	*/
+	
+	$caracteres_validos = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$@^_{}"; 
+
+	/*
+	El caracter comillas y comillas simples técnicamente son válidos para CP/M pero
+	para windows pueden ser un dolor de cabeza y por si acaso prefiero evitar el
+	caracter ñoqui "~" en Linux, asi que no los uso para el archivo generado por ZASM
+	solo me interesa que el nombre sea 8.3 valido para CP/M
+	*/
+
+	for ($i=0;$i<strlen($s);$i++)
+	{
+		$pos=strpos($caracteres_validos,substr($s,$i,1));
+		//SI ENCUENTRO UN CARACTER QUE NO SEA VALIDO RETORNO FALSO
+		if ($pos===false) return false;
+	}
+	
+	return true;
+	
+}
+
+function make_p3dos_bin_header($source_file,$dest_file,$load_dir)
+{
+
+	$cont       = file_get_contents($source_file);
+	$length     = strlen($cont);
+	$length_cpm = $length+128;
+	
+	$c1 = intval($length_cpm/256);
+	$c2 = $length_cpm-($c1*256);
+	
+	$b1 = intval($length/256);
+	$b2 = $length-($b1*256);
+	
+	$l1 = intval($load_dir/256);
+	$l2 = $load_dir-($l1*256);
+	
+	$header = "PLUS3DOS" . 
+						chr(26)    . 
+						chr(1)     . 
+						chr(0)     . 
+						chr($c2)   . 
+						chr($c1)   .
+						chr(0)     . 
+						chr(0)     .
+						chr(3)     .
+						chr($b2)   .
+						chr($b1)   .
+						chr($l2)   .
+						chr($l1)   .
+						chr(0)     .
+						chr(128)   .
+						str_repeat(chr(0),105);
+
+	$chksum = 0;
+
+	//HAGO EL CHECKSUM DE LA CABECERA
+	for ($i=0;$i<=127;$i++) $chksum+=ord(substr($header,$i,1));
+	
+	//MODULO 256 PARA AGREGAR AL FINAL DE LA CABECERA
+	$modulo256 = $chksum % 256;
+	
+	//AGREGO A LA CABECERA EL CHECKSUM
+	$header .= chr($modulo256);
+
+	//COMPLETO CON 0's HASTA HACER EL TAMAÑO MULTIPLO DE 128 BYTES
+	if (intval($length/128) != $length/128)
+	{
+		$remanente=128-($length-(intval($length/128)*128));
+		$cont.=str_repeat(chr(0),$remanente);
+	}
+	
+	//PONGO LA CABECERA +3DOS AL PRINCIPIO Y LE SUMO EL CONTENIDO DEL ARCHIVO
+	$cont = $header . $cont;
+
+	return $cont;
+	
+}
+
+function ayuda() 
+{
+	echo "Esperaba 2 argumentos como mínimo\n\n";
+	echo "1 = archivo binario origen\n";
+	echo "2 = archivo destino con nombre válido CP/M, EJ: test.bin\n";
+	echo "3 = opcional, dirección de carga por defecto (si no se especifica se asume 32768)\n\n";
+	echo "(usar \"--quiet\" al principio de los argumentos no produce salida)\n";
+	echo "(usar \"--help\" al principio o sin argumentos muestra esta ayuda)\n\n";
+	echo "Ejemplo: p3header 'archivo_windows_linux' test.bin 40000\n\n";
+	echo "El uso de este programa fue pensado para crear archivos con cabecera PLUS3DOS\n";
+	echo "ej, un SCREEN\$ o un bloque BINARIO aptos para ser enbebidos en una imagen de\n";
+	echo "floppy DSK mediante el uso de CPCFS\n\n";
+}
