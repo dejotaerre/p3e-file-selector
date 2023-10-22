@@ -53,7 +53,6 @@ void help(char *name)
 	fprintf(stderr,"Syntax: %s filename    - add +3DOS header\n", name);
 	fprintf(stderr,"        %s -a addr filename - add +3DOS header with specified start address\n", name);
 	fprintf(stderr,"        %s -F filename - fix existing +3DOS header\n", name);
-	fprintf(stderr,"        %s -F filename - fix existing +3DOS header\n", name);
 	exit(1);
 }
 
