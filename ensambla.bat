@@ -1,10 +1,10 @@
 @echo off
+echo.
 
 set org=28672
-
 set nombre=selz80
 
-./bin/sjasmplus --lst --lstlab --raw=%nombre%.obj %nombre%.asm
+.\bin\sjasmplus --lst --lstlab --raw=%nombre%.obj %nombre%.asm
 
 if errorlevel 1 (
 	echo.
@@ -18,15 +18,17 @@ if errorlevel 1 (
 if exist %nombre%.bin del %nombre%.bin
 if exist %nombre%.dsk del %nombre%.dsk
 
-./bin/specform -a %org% %nombre%.obj
+.\bin\specform -a %org% %nombre%.obj
 ren %nombre%.obj.zxb %nombre%.bin
 
 cd bin
 
-echo new -f PCW3 ../selz80.dsk > makedsk
-echo open -f PCW3 ../selz80.dsk >> makedsk
-echo put -f ../disk DISK >> makedsk
-echo put -f ../selz80.bin SELZ80.BIN >> makedsk
+REM genero los comandos para crear una imagen de disquete para testeos en el emulador
+REM junto al binario con esta utilidad y un cargador DISK para testeo
+echo new -f PCW3 ..\selz80.dsk > makedsk
+echo open -f PCW3 ..\selz80.dsk >> makedsk
+echo put -f ..\disk DISK >> makedsk
+echo put -f ..\selz80.bin SELZ80.BIN >> makedsk
 echo cd dskfiles >> makedsk
 echo put -f ADDAMS.Z80 >> makedsk
 echo put -f ALIENH.Z80 >> makedsk
@@ -56,6 +58,7 @@ set fuse_opciones=%fuse_opciones% --rom-plus3-0 ..\p3t_rom0.rom
 set fuse_opciones=%fuse_opciones% --rom-plus3-1 ..\p3t_rom1.rom
 set fuse_opciones=%fuse_opciones% --rom-plus3-2 ..\p3t_rom2.rom
 set fuse_opciones=%fuse_opciones% --rom-plus3-3 ..\p3t_rom3.rom
+set fuse_opciones=%fuse_opciones% --rom-multiface3 ..\roms\mf3.rom
 set fuse_opciones=%fuse_opciones% --simpleide-masterfile +3e8bits.hdf
 set fuse_opciones=%fuse_opciones% --graphics-filter tv4x 
 set fuse_opciones=%fuse_opciones% --pal-tv2x

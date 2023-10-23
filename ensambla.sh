@@ -110,9 +110,8 @@ else
 	#fuse_exec="fuse-sdl"
 	fuse_exec="fuse"
 
-	# argumentos para fuse con el propósito de un testeo rápido
-	#--snapshot file
-	#--tape file
+	# genero los comandos para crear una imagen de disquete para testeos en el emulador
+	# junto al binario con esta utilidad y un cargador DISK para testeo
 	exec_args="--machine plus3 \
 	--simpleide \
 	--multiface3 \
