@@ -3,6 +3,7 @@ echo.
 
 set org=28672
 set nombre=selz80
+set fuse_exec=fusew\fuse
 
 .\bin\sjasmplus --lst --lstlab --raw=%nombre%.obj %nombre%.asm
 
@@ -50,6 +51,8 @@ cpcxfsw < makedsk
 del makedsk
 cd ..
 
+rem Hago una variable de entorno con los parámetros necesarios para ejecutar y testear
+rem esta utilidad
 set fuse_opciones=--machine plus3
 set fuse_opciones=%fuse_opciones% --simpleide
 set fuse_opciones=%fuse_opciones% --multiface3
@@ -65,10 +68,6 @@ set fuse_opciones=%fuse_opciones% --pal-tv2x
 set fuse_opciones=%fuse_opciones% --drive-plus3a-type "Double-sided 80 track"
 set fuse_opciones=%fuse_opciones% --drive-plus3b-type "Double-sided 80 track"
 
-rem TODO pronto, ahora hay que probar con un emulador (FUSE en este caso)
-
-set fuse_exec=fusew\fuse
-
 echo.
 echo.
 echo "***********************************************************************************************"
@@ -76,6 +75,7 @@ echo EJECUTANDO:
 echo %fuse_exec% %fuse_opciones%
 echo "***********************************************************************************************"
 
+rem TODO pronto, ahora hay que probar con un emulador (FUSE en este caso)
 %fuse_exec% %fuse_opciones%
 
 rem LIMPIEZA

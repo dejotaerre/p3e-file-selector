@@ -65,6 +65,8 @@ mv "${nombre}.obj.zxb" "${nombre}.bin"
 
 cd bin
 
+# Creo un archivo con los comandos necesarios para crear una imágen de disquete con
+# cpcxfs para propósitos de testeos con el emulador FUSE, una vez usado se borra
 echo "new -f PCW3 ../selz80.dsk" > makedsk
 echo "open -f PCW3 ../selz80.dsk" >> makedsk
 echo "put -f ../disk DISK" >> makedsk
@@ -141,7 +143,7 @@ else
 fi
 
 #LIMPIEZA
-#rm -f "${nombre}.bin"
-#rm -f "${nombre}.dsk"
-#rm -f "${nombre}.obj"
-#rm -f "${nombre}.lst"
+rm -f "${nombre}.bin"
+rm -f "${nombre}.dsk"
+rm -f "${nombre}.obj"
+rm -f "${nombre}.lst"
