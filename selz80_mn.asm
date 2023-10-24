@@ -160,10 +160,10 @@ LOAD_Z80PAGE:	LD	BC,$0600	; CARGO EN PAG0 EL ARCHIVO ABIERTO
 
 ; ================================================================================================== 
 /*
-Explicación de cómo es el formato Z80 lo podés encontrar en:
+Una explicación de cómo es el formato Z80 lo podés encontrar en:
 https://worldofspectrum.org/faq/reference/z80format.htm
 
-(a continuación una traducción literal al español del método de comprensión)
+(a continuación una traducción literal al español del método de compresión)
 
 "El método de compresión es muy simple: reemplaza repeticiones de al menos cinco bytes 
 iguales por un código de cuatro bytes ED ED xx yy, que significa "byte yy repetido xx veces". 

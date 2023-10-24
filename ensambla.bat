@@ -24,8 +24,8 @@ ren %nombre%.obj.zxb %nombre%.bin
 
 cd bin
 
-REM genero los comandos para crear una imagen de disquete para testeos en el emulador
-REM junto al binario con esta utilidad y un cargador DISK para testeo
+REM genero en un archivo los comandos para crear una imagen de disquete para testeos en el emulador junto
+REM al binario de esta utilidad con un cargador DISK para testeo, usando CPCXFS
 echo new -f PCW3 ..\selz80.dsk > makedsk
 echo open -f PCW3 ..\selz80.dsk >> makedsk
 echo put -f ..\disk DISK >> makedsk

@@ -1034,27 +1034,28 @@ HELP_MSG:	DB	22,ROW_START,0		; AT EN ROW_START,0
 			;0         1         2         3         4
 			;012345678901234567890123456789012345678901
 
-		DB	128,129,130,131,"  - [CURSORES] mueve puntero",13
+		DB	128,129,130,131,"  - (CURSORES) mueve puntero",13
 		DB	136,138,32,137,138," - [TV] [IV] pagina arriba/abajo",13;
-		DB	135,"     - [ENTER] selecciona archivo",13
+		DB	135,"     - ENTER selecciona archivo",13
 		DB	25,134,42
 		DB	"NOTA sobre la carga de TAPs:",13,13
 
 		DB	"ENTER puede combinarse con *CAPS o *SYMBOL",13
 
 		DB	"*SYMBOL retorna al BASIC con USR=2 en vez "
-		DB	"de 1, y USR=3 con *CAPS, esto es por si",13
-		DB	"quieres hacer acciones diferentes en tu",13
-		DB	"BASIC cargador, ademas de cargar el juego "
-		DB	"con: SPECTRUM n$: LOAD \"\"",13
+		DB	"de 1, y USR=3 cuando se lo hace con *CAPS "
+		DB	"Esto es por si quieres hacer acciones",13
+		DB	"diferentes en tu BASIC cargador, aparte de"
+		DB	"cargar el juego con SPECTRUM n$: LOAD \"\"",13
 		DB	25,134,42
 
 		;	 012345678901234567890123456789012345678901
-		DB	"Seleccionar un Z80 con *SHIFT + ENTER hace"
+		DB	"Seleccionar un Z80 con *SHIFT+ENTER hace",13
 		DB	"que se muestre la pantalla y retorna a",13
 		DB	"BASIC con USR=7 dejando una copia de la",13
 		DB	"pantalla en 49152, pero si lo haces con",13
-		DB	"*CAPS usa a RUNZ80 para cargarlo"
+		DB	"*CAPS, se carga el Z80 usando RUNZ80 en",13
+		DB	"lugar del cargador interno del +3e",13
 		DB	$FF
 
 ; ==================================================================================================
@@ -1213,6 +1214,6 @@ BUFFERNAMES:		EQU	CATBUFFER+$1000	; DISCO PARA LOS NOMBRES 8.3
 						; usado si el origen es un floppy físico
 
 ; ==================================================================================================
-; AUTORÍA - POR FAVOR NO LO REMUEVAS EN LO POSIBLE
+; AUTORÍA - COPYLEFT - PERO POR FAVOR NO LO REMUEVAS EN LO POSIBLE
 
-		DB	"(L) DJr - V0.95b",$FF	; COPYLEFT
+		DB	"(L) DJr - V0.97b",$FF

@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#===========================================================================================
-#vemos si tenemos lo necesario
-
 arquitectura=$(uname -m)
 
 if [ "$arquitectura" = "x86_64" ]; then
@@ -18,12 +15,14 @@ elif [ "$arquitectura" = "aarch64" ]; then
     cpcfscmd=cpcxfs_arm
     sjasmcmd=sjasmplus_arm
 else
-    echo "Arquitectura no compatible: $arquitectura con este script"
+    echo "Arquitectura $arquitectura no compatible con este script"
     exit 1
 fi
 
 echo
 
+#===========================================================================================
+#vemos si tenemos lo necesario
 if [ ! -e "./bin/specform" ]; then
 		cd bin
 		gcc -o specform specform.c
@@ -39,20 +38,19 @@ if [ ! -e "./bin/specform" ]; then
 		fi
 fi
 
-#org 7000h
-org=28672
+org=28672 #org 7000h
 
 nombre=selz80
 
 $sjasmcmd --lst --lstlab --raw=${nombre}.obj ${nombre}.asm
 
 if [ $? -ne 0 ]; then
-		echo
-		echo "*************************"
-		echo "* ¡Falló el ensamblado! *"
-		echo "*************************"
-		echo
-		exit 1
+	echo
+	echo "*************************"
+	echo "* ¡Falló el ensamblado! *"
+	echo "*************************"
+	echo
+	exit 1
 fi
 
 echo
@@ -65,8 +63,8 @@ mv "${nombre}.obj.zxb" "${nombre}.bin"
 
 cd bin
 
-# Creo un archivo con los comandos necesarios para crear una imágen de disquete con
-# cpcxfs para propósitos de testeos con el emulador FUSE, una vez usado se borra
+# genero en un archivo los comandos para crear una imagen de disquete para testeos en el emulador junto
+# al binario de esta utilidad con un cargador DISK para testeo, usando CPCXFS
 echo "new -f PCW3 ../selz80.dsk" > makedsk
 echo "open -f PCW3 ../selz80.dsk" >> makedsk
 echo "put -f ../disk DISK" >> makedsk
@@ -85,9 +83,13 @@ echo "put -f JETPAC.TAP" >> makedsk
 echo "put -f MANIC.TAP" >> makedsk
 echo "put -f WECLEMAN.TAP" >> makedsk
 #echo "put -f QUAZATRO.Z80" >> makedsk
-#echo "put -f WHERETIM.TAP" >> makedsk
+#echo "put -f WHERETIM.TAP" >> makedsk	#imposible de cargar por que usa la RAM7 
 
-./$cpcfscmd < makedsk
+# no se por que, pero CPCXFS tiene comportamientos erráticos y aleatorios con la copia con "mput" cuando se usa
+# redirecciones con "< filename" - hubiese sido preferible hacer "mget -f *.Z80" en vez de hacerlo archivo
+# por archivo, pero parece que si lo hago con "put" no se da ese problema
+
+$cpcfscmd < makedsk
 
 rm makedsk
 
@@ -97,24 +99,25 @@ if ! command -v fuse >/dev/null 2>&1; then
 
 	echo
 	echo -e "\e[1;31mADVERTENCIA:\e[0m no encuentro el emulador FUSE, así que no podrás probar el"
-	echo "resultado, pero puedes buscar en https://fuse-emulator.sourceforge.net/"
-	echo "o bien instalarlo con tu gestor de paquetes favorito"
+	echo "resultado, pero podrás buscar en https://fuse-emulator.sourceforge.net/"
+	echo "sus fuentes y compilarlo, o bien instalarlo con tu gestor de paquetes"
+	echo "favorito de tu distro (asegúrate que sea la versión 1.6 o superior)"
 	echo
-	echo "Sin embargo se ha creado una imagen de disquete de nombre \"$nombre.dsk\""
-	echo "que contiene este utilitario volcarla en un floppy físico, o bien en"
-	echo "un pendrive para usarla desde una unidad GOTEK en tu +3e"
+	echo -e "Sin embargo se ha creado una imagen de disquete de nombre \e[1;31m\"$nombre.dsk\"\e[0m"
+	echo "que contiene este utilitario, junto a un puñado de Z80s y TAPs de testing,"
+	echo "para volcarla en un floppy físico real, o bien en un pendrive para usarse"
+	echo "desde una unidad GOTEK en tu +3 o +3e"
 	echo
 
 else
 
-	#TODO pronto, ahora hay que probar con un emulador (FUSE en este caso)
+	#TA todo pronto, ahora hay que probar con un emulador (FUSE en este caso)
 
 	#fuse_exec="fuse-sdl"
 	fuse_exec="fuse"
 
-	# genero los comandos para crear una imagen de disquete para testeos en el emulador
-	# junto al binario con esta utilidad y un cargador DISK para testeo
-	exec_args="--machine plus3 \
+	#argumentos para el testeo en FUSE de este utilitario y "mis" ROMs +3e
+	fuse_opciones="--machine plus3 \
 	--simpleide \
 	--multiface3 \
 	--plus3disk ./selz80.dsk \
@@ -126,24 +129,25 @@ else
 	--simpleide-masterfile ./+3e8bits.hdf \
 	--graphics-filter tv4x \
 	--pal-tv2x \
-	--drive-plus3a-type 'Double-sided 80 track' --drive-plus3b-type 'Double-sided 80 track'"
-
-	comando="${fuse_exec} ${exec_args}"
+	--drive-plus3a-type 'Double-sided 80 track' \
+	--drive-plus3b-type 'Double-sided 80 track'"
 
 	echo 
 	echo
 	echo "***********************************************************************************************"
 	echo EJECUTANDO:
 	echo
-	echo $fuse_exec $exec_args
+	echo $fuse_exec $fuse_opciones
 	echo "***********************************************************************************************"
 
-	eval $comando > /dev/null 2>&1
+	fuse_test="${fuse_exec} ${fuse_opciones}"
+
+	eval $fuse_test > /dev/null 2>&1
 
 fi
 
 #LIMPIEZA
+#rm -f "${nombre}.dsk"
 rm -f "${nombre}.bin"
-rm -f "${nombre}.dsk"
 rm -f "${nombre}.obj"
 rm -f "${nombre}.lst"
