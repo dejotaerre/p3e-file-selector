@@ -3,30 +3,41 @@
 arquitectura=$(uname -m)
 
 if [ "$arquitectura" = "x86_64" ]; then
+
     cpcfscmd=cpcxfs
     sjasmcmd=sjasmplus
     specform=specform
+
 elif [ "$arquitectura" = "i686" ]; then
+
     cpcfscmd=cpcxfs
     sjasmcmd=sjasmplus
     specform=specform
+
 elif [ "$arquitectura" = "armv7l" ]; then
+
     cpcfscmd=cpcxfs_arm
     sjasmcmd=sjasmplus_arm
     specform=specform_arm
+
 elif [ "$arquitectura" = "aarch64" ]; then
+
     cpcfscmd=cpcxfs_arm
     sjasmcmd=sjasmplus_arm
     specform=specform_arm
+
 else
+
     echo "Arquitectura $arquitectura no compatible con este script"
     exit 1
+
 fi
 
 echo
 
 #===========================================================================================
 #vemos si tenemos lo necesario
+
 if [ ! -e "./bin/specform" ]; then
 	cd bin
 	gcc -o specform specform.c
@@ -46,7 +57,7 @@ org=28672 #org 7000h
 
 nombre=selz80
 
-./bin/$sjasmcmd --lst --lstlab --raw=${nombre}.obj ${nombre}.asm
+./bin/${sjasmcmd} --lst --lstlab --raw=${nombre}.obj ${nombre}.asm
 
 if [ $? -ne 0 ]; then
 	echo
@@ -61,7 +72,7 @@ echo
 
 rm -f "${nombre}.dsk"
 
-./bin/$specform -a ${org} "${nombre}.obj"
+./bin/${specform} -a ${org} "${nombre}.obj"
 rm -f "${nombre}.bin"
 mv "${nombre}.obj.zxb" "${nombre}.bin" 
 
@@ -95,7 +106,7 @@ echo "put -f WECLEMAN.TAP" >> makedsk
 # redirecciones con "cpcxfs < filename" - hubiese preferido hacer "mget -f *.Z80" en vez de hacerlo archivo  por archivo,
 # pero parece que si lo hago con "put" no se da ese problema
 
-$cpcfscmd < makedsk
+./$cpcfscmd < makedsk
 
 rm makedsk
 
