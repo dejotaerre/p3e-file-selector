@@ -5,15 +5,19 @@ arquitectura=$(uname -m)
 if [ "$arquitectura" = "x86_64" ]; then
     cpcfscmd=cpcxfs
     sjasmcmd=sjasmplus
+    specform=specform
 elif [ "$arquitectura" = "i686" ]; then
     cpcfscmd=cpcxfs
     sjasmcmd=sjasmplus
+    specform=specform
 elif [ "$arquitectura" = "armv7l" ]; then
     cpcfscmd=cpcxfs_arm
     sjasmcmd=sjasmplus_arm
+    specform=specform_arm
 elif [ "$arquitectura" = "aarch64" ]; then
     cpcfscmd=cpcxfs_arm
     sjasmcmd=sjasmplus_arm
+    specform=specform_arm
 else
     echo "Arquitectura $arquitectura no compatible con este script"
     exit 1
@@ -24,25 +28,25 @@ echo
 #===========================================================================================
 #vemos si tenemos lo necesario
 if [ ! -e "./bin/specform" ]; then
-		cd bin
-		gcc -o specform specform.c
-		cd ..
-		if [ ! -e "./bin/specform" ]; then
-			echo "NO pude compilar SPECFORM (lo necesito para crear cabeceras"
-			echo "+3DOS a partir de un binario en bruto)"
-			echo
-			echo "**NOTA** SPECFORM es parte de una colección de utilitarios de John Elliott"
-			echo "que puedes descargar sus fuentes desde: http://www.seasip.info/ZX/unix.html"
-			echo
-			exit 1
-		fi
+	cd bin
+	gcc -o specform specform.c
+	cd ..
+	if [ ! -e "./bin/specform" ]; then
+		echo "NO pude compilar SPECFORM (lo necesito para crear cabeceras"
+		echo "+3DOS a partir de un binario en bruto)"
+		echo
+		echo "**NOTA** SPECFORM es parte de una colección de utilitarios de John Elliott"
+		echo "que puedes descargar sus fuentes desde: http://www.seasip.info/ZX/unix.html"
+		echo
+		exit 1
+	fi
 fi
 
 org=28672 #org 7000h
 
 nombre=selz80
 
-$sjasmcmd --lst --lstlab --raw=${nombre}.obj ${nombre}.asm
+./bin/$sjasmcmd --lst --lstlab --raw=${nombre}.obj ${nombre}.asm
 
 if [ $? -ne 0 ]; then
 	echo
@@ -57,7 +61,7 @@ echo
 
 rm -f "${nombre}.dsk"
 
-./bin/specform -a ${org} "${nombre}.obj"
+./bin/$specform -a ${org} "${nombre}.obj"
 rm -f "${nombre}.bin"
 mv "${nombre}.obj.zxb" "${nombre}.bin" 
 
@@ -85,9 +89,11 @@ echo "put -f WECLEMAN.TAP" >> makedsk
 #echo "put -f QUAZATRO.Z80" >> makedsk
 #echo "put -f WHERETIM.TAP" >> makedsk	#imposible de cargar por que usa la RAM7 
 
-# no se por que, pero CPCXFS tiene comportamientos erráticos y aleatorios con la copia con "mput" cuando se usa
-# redirecciones con "< filename" - hubiese sido preferible hacer "mget -f *.Z80" en vez de hacerlo archivo
-# por archivo, pero parece que si lo hago con "put" no se da ese problema
+# cuando uso CPCXFS con redirecciones aparecen a veces errores tipo asi: "Redirection of stin/stdout is not allowed!"
+
+# no se por que, pero CPCXFS tiene comportamientos erráticos y aleatorios con la copia con "mput" cuando utilizo
+# redirecciones con "cpcxfs < filename" - hubiese preferido hacer "mget -f *.Z80" en vez de hacerlo archivo  por archivo,
+# pero parece que si lo hago con "put" no se da ese problema
 
 $cpcfscmd < makedsk
 
@@ -111,7 +117,7 @@ if ! command -v fuse >/dev/null 2>&1; then
 
 else
 
-	#TA todo pronto, ahora hay que probar con un emulador (FUSE en este caso)
+	#YA-TA todo pronto, ahora hay que probar con un emulador (FUSE en este caso)
 
 	#fuse_exec="fuse-sdl"
 	fuse_exec="fuse"
