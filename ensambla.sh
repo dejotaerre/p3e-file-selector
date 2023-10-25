@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# OCT-2023 - ADICIONADO SOPORTE PARA ARM (i.e Raspberry PI)
+
+#===========================================================================================
+
 arquitectura=$(uname -m)
 
 if [ "$arquitectura" = "x86_64" ]; then
@@ -112,7 +116,7 @@ rm makedsk
 
 cd ..
 
-if ! command -v fuse >/dev/null 2>&1; then
+if ! command -v xfuse >/dev/null 2>&1; then
 
 	echo
 	echo -e "\e[1;31mADVERTENCIA:\e[0m no encuentro el emulador FUSE, así que no podrás probar el"
@@ -128,7 +132,7 @@ if ! command -v fuse >/dev/null 2>&1; then
 
 else
 
-	#YA-TA todo pronto, ahora hay que probar con un emulador (FUSE en este caso)
+	#Ya está todo pronto, ahora hay que probar con un emulador (FUSE en este caso)
 
 	#fuse_exec="fuse-sdl"
 	fuse_exec="fuse"
