@@ -25,11 +25,12 @@ if exist %nombre%.dsk del %nombre%.dsk
 
 REM USO "specform" para crear una cabecera +3DOS a partir del archivo binario compilado por SJASMPLUS
 REM fue compilado para Windows 32 bits - buscar fuentes en https://www.seasip.info/ZX/unix.html del paquete
-REM TAPTOOLS, por si necesitas recompilarlo para usarlo en MSDOS
-REM (NOTA "anecdótica": he comprobado que algunos AVs creen que SPECFORM es un virus, y nada mas lejos
+REM TAPTOOLS, (también en https://github.com/OS2World/APP-EMULATOR-TapTools.git) por si necesitas 
+REM recompilarlo para usarlo en MSDOS 
+REM (NOTA "anecdótica": he comprobado que algunos antivirus creen que SPECFORM es un virus, y nada mas lejos
 REM de la realidad..., es un falso positivo, ya que solo escribe un archivo en disco con la cabecera para
 REM volcarla en una imágen de disquete DSK, así que estate atento si esto ocurre para quitar de cuarentena
-REM ese pobre y buen utitilatario)
+REM a este pobre y buen utitilatario)
 
 .\bin\specform -a %org% %nombre%.obj
 ren %nombre%.obj.zxb %nombre%.bin
@@ -100,7 +101,7 @@ REM Está todo pronto, ahora hay que probar con un emulador (FUSE en este caso)
 
 REM LIMPIEZA de archivos no necesarios posterior al testeo
 if exist %nombre%.bin del %nombre%.bin
-if exist %nombre%.dsk del %nombre%.dsk
+REM if exist %nombre%.dsk del %nombre%.dsk
 if exist %nombre%.lst del %nombre%.lst
 if exist %nombre%.obj del %nombre%.obj
 

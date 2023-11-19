@@ -1,0 +1,10 @@
+new -f PCW3 ..\selz80b.dsk
+open -f PCW3 ..\selz80b.dsk
+put -f ..\disk DISK
+put -f ..\selz80.bin SELZ80.BIN
+put -f BEAST.TAP
+put -f BRUCELEE.TAP
+put -f COMANDO.TAP
+put -f DARKMAN.TAP
+put -f FUTBOL.TAP
+put -f MUNCHER.TAP

@@ -35,7 +35,10 @@ sentido usar esta utilidad cuyo único soporte de almacenamiento es un floppy, y
 guardaría con suerte unos 3 o 4 Z80s y con suerte un par de TAPs chicos
 */
 
-START:		CALL	INICIAR			; INICIALIZO ESTA UTILIDAD
+START:		LD	(GUARDA_STACK),SP
+		LD	SP,MYSTACK
+
+		CALL	INICIAR			; INICIALIZO ESTA UTILIDAD
 
 		CALL	SELEC_ARCH		; SALTO AL BUCLE PRINCIPAL DE SELECCIÓN DE
 						; DE ARCHIVOS
@@ -145,7 +148,8 @@ MOSTRAR_Z80SCR:	CALL	BACKUP_SCR		; RESPALDO LA PANTALLA EN 7
 
 		LD	A,12
 		LD	BC,$0007		; RETORNO A BASIC CON USR=7
-		JP	PRINT
+		CALL	PRINT
+		JP	RETBAS
 
 ; ==================================================================================================
 
@@ -220,7 +224,7 @@ LOAD_TAP:	CALL	COPY_NAME		; ARCHIVO CON EXTENSION "TAP"
 		LD	BC,$0001		; SPECTRUM n$: LOAD ""
 		ADD	A,C			; PERO TAMBIEN RETORNA EN BC 2
 		LD	C,A			; SI SE SELECCIONO EL ARCHIVO CON
-		RET				; SHIFT, Y 3 SI FUE CON CAPS, PARA
+		JR	RETBAS			; SHIFT, Y 3 SI FUE CON CAPS, PARA
 						; QUE TENGAS 2 ACCIONES EXTRAS POSIBLES
 						; EN TU BASIC CARGADOR
 
@@ -228,15 +232,15 @@ LOAD_TAP:	CALL	COPY_NAME		; ARCHIVO CON EXTENSION "TAP"
 
 LOAD_BAS:	CALL	COPY_NAME		; ARCHIVO BASIC RETORNO A BASIC
 		LD	BC,$0004		; PARA QUE HAGAS: LOAD n$
-		RET
+		JR	RETBAS
 
 ; ==================================================================================================
 ; 
 
 LOAD_SCR:	CALL	COPY_NAME		; ARCHIVO PANTALLA (CODE xxxxx,6912)
 		LD	BC,$0005
+RETBAS:		LD	SP,(GUARDA_STACK)
 		RET
-
 ; ==================================================================================================
 ; TO-DO: LEER CABECERA Y DECIRLE AL BASIC SI LO SELECCIONADO ES UN binario,
 ; PERO SI EL TAMAÑO ES 6912 SIGNIFICA QUE ES UN SCREEN$ ENTONCES SALTAR A
@@ -245,7 +249,7 @@ LOAD_SCR:	CALL	COPY_NAME		; ARCHIVO PANTALLA (CODE xxxxx,6912)
 
 LOAD_BIN:	CALL	COPY_NAME		; ARCHIVO BIN (c/m)
 		LD	BC,$0006
-		RET
+		JP	RETBAS
 
 ; ==================================================================================================
 
@@ -666,6 +670,8 @@ PRINT_PUNTERO:	LD	HL,POSPUNT	;POSICIONO PARA IMPRIMIR
 
 		LD	A,14		;IMPRIMO LA CANTIDAD DE
 		CALL	PRINT		;ARCHS. EN EL CATALOGO
+		LD	A,32
+		CALL	PRINT
 
 		LD	HL,RCOLORS_BRW	;RESTABLESCO COLORES
 		JP	PRINT_MSG
@@ -798,10 +804,10 @@ ACEPTA:		XOR	A		; SELECCIONÓ EL ARCHIVO A CARGAR
 
 ; ==================================================================================================
 
-CANCEL:		INC	SP		; RETORNA 0 SI EL USUARIO CANCELÓ
-		INC	SP		; (O SEA QUE PRESIONÓ SPACE)
-		LD	BC,$0000	; RETORNO A BASIC DIRECTAMENTE
-		RET			; CON USR=0
+CANCEL:		LD	BC,$0000	; RETORNA 0 SI EL USUARIO CANCELÓ
+		JP	RETBAS		; (O SEA QUE PRESIONÓ SPACE)
+					; RETORNO A BASIC DIRECTAMENTE
+					; CON USR=0
 
 ; ==================================================================================================
 		
@@ -1154,6 +1160,7 @@ LINEA:			DB	$00
 CANT_NOMBRES:		DB	$00
 PAGINA_ACTUAL:		DB	$FF
 DIR_NAME:		DW	$0000
+GUARDA_STACK:		DW	$0000
 FILEMASK:		DB	"*.*",$FF	; máscara a leer en CAT (antes era solo *.Z80)
 DATE:			DB	__DATE__	; fecha de ensamblado puesto por SJASMPLUS
 
@@ -1196,6 +1203,9 @@ PBANKM:			EQU	$7FFD		; PUERTO CONF. DE PAGINAS RAM (1)
 
 ; ==================================================================================================
 ; ESPACIOS INTERMEDIOS DE MEMORIA PARA ALMACENAMIENTOS VARIOS
+
+			DS	127
+MYSTACK:		DB	00		; CONTENGO MI PROPIO STACK (128b)
 
 CATBUFFER:		EQU	$9500		; BUFFER PARA EL CATALOGO DE
 BUFFERNAMES:		EQU	CATBUFFER+$1000	; DISCO PARA LOS NOMBRES 8.3

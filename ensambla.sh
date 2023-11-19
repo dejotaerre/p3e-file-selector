@@ -4,6 +4,13 @@
 
 #===========================================================================================
 
+pausar() {
+  echo "Presiona Enter para continuar..."
+  read -r
+}
+
+#===========================================================================================
+
 arquitectura=$(uname -m)
 
 if [ "$arquitectura" = "x86_64" ]; then
@@ -84,11 +91,21 @@ cd bin
 
 # genero en un archivo los comandos para crear una imagen de disquete para testeos en el emulador junto
 # al binario de esta utilidad con un cargador DISK para testeo, usando CPCXFS
-echo "new -f PCW3 ../selz80.dsk" > makedsk
-echo "open -f PCW3 ../selz80.dsk" >> makedsk
+if [ -e "../selz80a.dsk" ]; then
+    rm "../selz80a.dsk"
+fi
+if [ -e "../selz80b.dsk" ]; then
+    rm "../selz80b.dsk"
+fi
+
+echo "new -f PCW3 ../selz80a.dsk" > makedsk
+echo "new -f PCW3 ../selz80b.dsk" >> makedsk
+echo "open -f PCW3 ../selz80a.dsk" >> makedsk
 echo "put -f ../disk DISK" >> makedsk
 echo "put -f ../selz80.bin SELZ80.BIN" >> makedsk
+
 echo "cd dskfiles" >> makedsk
+
 echo "put -f ADDAMS.Z80" >> makedsk
 echo "put -f ALIENH.Z80" >> makedsk
 echo "put -f BATMAN.Z80" >> makedsk
@@ -101,8 +118,27 @@ echo "put -f HYPERSPO.TAP" >> makedsk
 echo "put -f JETPAC.TAP" >> makedsk
 echo "put -f MANIC.TAP" >> makedsk
 echo "put -f WECLEMAN.TAP" >> makedsk
-#echo "put -f QUAZATRO.Z80" >> makedsk
-#echo "put -f WHERETIM.TAP" >> makedsk	#imposible de cargar por que usa la RAM7 
+echo "dir" >> makedsk
+echo "close" >> makedsk
+
+echo "open -f PCW3 ../../selz80b.dsk" >> makedsk
+
+echo "put -f ../../disk DISK" >> makedsk
+echo "put -f ../../selz80.bin SELZ80.BIN" >> makedsk
+
+echo "put -f BEAST.TAP" >> makedsk
+echo "put -f MUNCHER.TAP" >> makedsk
+echo "put -f BRUCELEE.TAP" >> makedsk
+echo "put -f COMANDO.TAP" >> makedsk
+echo "put -f DARKMAN.TAP" >> makedsk
+echo "put -f FUTBOL.TAP" >> makedsk
+echo "put -f QUAZATRO.Z80" >> makedsk
+#echo "put -f WHERETIM.TAP" >> makedsk #imposible de cargar por que usa la RAM7 
+
+echo "dir" >> makedsk
+
+echo "close" >> makedsk
+echo "exit" >> makedsk
 
 # cuando uso CPCXFS con redirecciones aparecen a veces errores tipo asi: "Redirection of stin/stdout is not allowed!"
 
@@ -111,12 +147,10 @@ echo "put -f WECLEMAN.TAP" >> makedsk
 # pero parece que si lo hago con "put" no se da ese problema
 
 ./$cpcfscmd < makedsk
-
 rm makedsk
-
 cd ..
 
-if ! command -v xfuse >/dev/null 2>&1; then
+if ! command -v fuse >/dev/null 2>&1; then
 
 	echo
 	echo -e "\e[1;31mADVERTENCIA:\e[0m no encuentro el emulador FUSE, así que no podrás probar el"
@@ -141,7 +175,7 @@ else
 	fuse_opciones="--machine plus3 \
 	--simpleide \
 	--multiface3 \
-	--plus3disk ./selz80.dsk \
+	--plus3disk ./selz80a.dsk \
 	--rom-plus3-0 ./p3t_rom0.rom \
 	--rom-plus3-1 ./p3t_rom1.rom \
 	--rom-plus3-2 ./p3t_rom2.rom \
@@ -168,7 +202,9 @@ else
 fi
 
 #LIMPIEZA
-#rm -f "${nombre}.dsk"
+rm -f "${nombre}.dsk"
 rm -f "${nombre}.bin"
 rm -f "${nombre}.obj"
 rm -f "${nombre}.lst"
+
+exit 0
