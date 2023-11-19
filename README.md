@@ -16,5 +16,7 @@ Adicionalmente se requiere de algún utilitario para crear cabeceras de archivo 
 Al final del proceso tendrás una imagen de floppy DSK con este utilitario que deberás ver como hacer llegar su contenido a un +3 REAL, yo en mi caso mi +3e lo uso con una "disquetera" GOTEK, lo que no me significa ningún problema.
 
 (*) Puedes buscar aquí por los fuentes de SPECFORM
+
 https://www.seasip.info/ZX/unix.html
+
 https://github.com/OS2World/APP-EMULATOR-TapTools.git
